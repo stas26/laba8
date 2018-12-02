@@ -1,0 +1,240 @@
+package paint;
+
+import 	java.awt.Color;
+import java.awt.Point;
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+import javax.imageio.ImageIO;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+
+@SuppressWarnings("serial")
+public class OpenFile extends JFrame {
+	public static BufferedImage image;
+	private BufferedReader br;
+	public OpenFile() throws ClassNotFoundException{
+		JFileChooser fc = new JFileChooser();
+		fc.addChoosableFileFilter(new paint.pngSaveFilter());
+		fc.addChoosableFileFilter(new paint.txtSaveFilter());
+        int result = fc.showOpenDialog(null);
+        if (result == JFileChooser.APPROVE_OPTION) {
+        	if(fc.getSelectedFile().getName().endsWith(".png"))
+        	{ 
+           		try {
+           			image = ImageIO.read(fc.getSelectedFile());
+           			paint.GUI.frame.repaint();
+           		} 
+           		catch (IOException ex) {}
+        	}
+        	else if(fc.getSelectedFile().getName().endsWith(".txt")){
+	        	try{
+	        		FileInputStream k = new FileInputStream(fc.getSelectedFile()); 
+	                InputStreamReader in = new InputStreamReader(k);
+	                br = new BufferedReader(in);
+	                String t = br.readLine(); 
+	                if(t==null) 
+	                { 
+	                    System.out.println ("File rong, chua co du lieu!"); 
+	                } 
+	                else 
+	                {  
+	                    while(t != null){
+	                        String[] a = t.split(";");
+	                        if(a[0].equals("MyRectangle")||a[0].equals("MySquare")){
+	                        	MyRectangle r = new MyRectangle();
+	                        	r.makeRectangle(Integer.parseInt(a[1].toString()), Integer.parseInt(a[2].toString()), Integer.parseInt(a[3].toString()), Integer.parseInt(a[4].toString()));
+	                        	r.setLineColor(new Color(Integer.parseInt(a[5]), Integer.parseInt(a[6]), Integer.parseInt(a[7])));
+	                        	if(a[8].equals("null")){
+	                        		r.setColor(null);
+	                        	}else{
+	                        		r.setColor(new Color(Integer.parseInt(a[8]), Integer.parseInt(a[9]), Integer.parseInt(a[10])));
+	                        	}
+	                        	GUI.paint.add(r);
+	                        	GUI.frame.repaint();
+	                        }
+	                        else if(a[0].equals("MyOval")||a[0].equals("MyCircle")){
+	                        	MyOval r = new MyOval();
+	                        	r.makeOval(Integer.parseInt(a[1]), Integer.parseInt(a[2]), Integer.parseInt(a[3]), Integer.parseInt(a[4]));
+	                        	r.setLineColor(new Color(Integer.parseInt(a[5]), Integer.parseInt(a[6]), Integer.parseInt(a[7])));
+	                        	if(a[8].equals("null")){
+	                        		r.setColor(null);
+	                        	}else{
+	                        		r.setColor(new Color(Integer.parseInt(a[8]), Integer.parseInt(a[9]), Integer.parseInt(a[10])));
+	                        	}
+	                        	GUI.paint.add(r);
+	                        	GUI.frame.repaint();
+	                        }else if(a[0].equals("MyTriangle")){
+	                        	MyTriangle r = new MyTriangle();
+	                        	r.makeTriangle(Integer.parseInt(a[1]), Integer.parseInt(a[2]), Integer.parseInt(a[3]), Integer.parseInt(a[4]));
+	                        	r.setLineColor(new Color(Integer.parseInt(a[5]), Integer.parseInt(a[6]), Integer.parseInt(a[7])));
+	                        	if(a[8].equals("null")){
+	                        		r.setColor(null);
+	                        	}else{
+	                        		r.setColor(new Color(Integer.parseInt(a[8]), Integer.parseInt(a[9]), Integer.parseInt(a[10])));
+	                        	}
+	                        	GUI.paint.add(r);
+	                        	GUI.frame.repaint();
+	                        }else if(a[0].equals("MyLine")){
+	                        	Point startPoint = new Point(Integer.parseInt(a[1]), Integer.parseInt(a[2]));
+	                        	Point endPoint = new Point(Integer.parseInt(a[3]), Integer.parseInt(a[4]));
+	                        	MyLine r = new MyLine(startPoint, endPoint);
+	                        	r.setColor(new Color(Integer.parseInt(a[5]), Integer.parseInt(a[6]), Integer.parseInt(a[7])));
+	                        	GUI.paint.add(r);
+	                        	GUI.frame.repaint();
+	                        }else if(a[0].equals("MyPoint")){
+	                        	MyPoint r = new MyPoint();
+	                        	r.setPoint(new Point(Integer.parseInt(a[1]), Integer.parseInt(a[2])));
+	                        	r.setColor(new Color(Integer.parseInt(a[3]), Integer.parseInt(a[4]), Integer.parseInt(a[5])));
+	                        	GUI.paint.add(r);
+	                        	GUI.frame.repaint();
+	                        }  
+	                        t = br.readLine();                        
+	                    }          
+	                } 
+	                 
+	            } 
+	            catch(IOException ex){ 
+	            	ex.printStackTrace();
+	            }
+           }
+        }
+	}
+}
+
+package paint;
+
+import java.awt.Color;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.io.BufferedWriter;
+import java.io.IOException;
+
+public class MyTriangle implements paint.Class2D {
+	
+	private Polygon Triangle;
+	private Color lineColor = null;
+	private Color color = null;
+	public MyTriangle() {
+		
+	}
+	public MyTriangle(Polygon pol) {
+		this.Triangle = pol;
+	}
+	public MyTriangle(Polygon pol, Color lc) {
+		this.Triangle = pol;
+		this.lineColor = lc;
+	}
+	public MyTriangle(Polygon pol, Color lc, Color c) {
+		this.Triangle = pol;
+		this.lineColor = lc;
+		this.color = c;
+	}
+	@Override
+	public void makeObject(Point startDrag, Point endDrag){
+		setLineColor(paint.GUI.selectColor);
+		int midx;
+		int midy;
+		if (startDrag.x > endDrag.x){
+			midx = endDrag.x +(Math.abs(startDrag.x - endDrag.x));
+			midy = endDrag.y;
+		}
+		else{
+			midx = endDrag.x - (Math.abs(startDrag.x - endDrag.x));
+			midy = endDrag.y;
+		}
+		int[] xs = {startDrag.x, endDrag.x, midx};
+		int[] ys = { startDrag.y, endDrag.y, midy};
+		Polygon pol = new Polygon(xs, ys, xs.length);
+		this.setTriangle(pol);
+	}
+	
+	public void makeTriangle(int x1, int y1, int x2, int y2){
+		int midx;
+		int midy;
+		if (x1 > x2){
+			midx = x2 +(Math.abs(x1 - x2));
+			midy = y2;
+		}
+		else{
+			midx = x2 -(Math.abs(x1 - x2));
+			midy = y2;
+		}
+		int[] xs = { x1, x2, midx};
+		int[] ys = { y1, y2, midy};
+		Polygon pol = new Polygon(xs, ys, xs.length);
+		this.setTriangle(pol);
+	}
+	
+	@Override
+	public void draw(paint.GraphicAdapter g) {
+		if(getColor() == null){
+    		g.getGraphicAdapter().setColor(getLineColor());
+    		g.getGraphicAdapter().drawPolygon(getTriangle());
+    	}
+		else{
+			g.getGraphicAdapter().setColor(getColor());
+			g.getGraphicAdapter().fillPolygon(getTriangle());
+		}
+	}
+	@Override
+    public void fill(Color c){
+		this.setColor(c);
+	}
+	
+	@Override
+	public boolean contains(Point p) {
+		return getTriangle().contains(p);
+	}
+
+	@Override
+	public void move(Point startDrag, Point endDrag) {
+		int[] xs = {0, 0, 0};
+		int[] ys = {0, 0, 0};
+		for(int k = 0; k < 3; k++ ){
+			xs[k] = this.getTriangle().xpoints[k] + endDrag.x - startDrag.x;
+			ys[k] = this.getTriangle().ypoints[k] + endDrag.y - startDrag.y;
+		}
+		this.setTriangle(new Polygon(xs,ys,3));
+	}
+	
+	@Override
+    public void writetoFile(BufferedWriter b){
+    	try {
+    		b.write(getClass().getSimpleName() + ";");
+    		b.write(getTriangle().xpoints[0] + ";" + getTriangle().ypoints[0] + ";");
+    		b.write(getTriangle().xpoints[1] + ";" + getTriangle().ypoints[1] + ";");
+    		b.write(getLineColor().getRed() + ";" + getLineColor().getGreen() + ";" + getLineColor().getBlue() +";");
+    		if(getColor()==null){
+    			b.write("null" + ";" +"null" +";" + "null");
+    		}else{
+    			b.write(getColor().getRed() + ";" + getColor().getGreen() + ";" + getColor().getBlue());
+    		}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
+	
+	public Polygon getTriangle() {
+		return Triangle;
+	}
+	public void setTriangle(Polygon triangle) {
+		Triangle = triangle;
+	}
+	public Color getLineColor() {
+		return lineColor;
+	}
+	public void setLineColor(Color lineColor) {
+		this.lineColor = lineColor;
+	}
+	public Color getColor() {
+		return color;
+	}
+	public void setColor(Color color) {
+		this.color = color;
+	}
+	
+}
